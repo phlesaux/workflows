@@ -27,6 +27,29 @@ jobs:
 
 To auto-merge majors as well, pass `with: auto_merge_major: true`.
 
+### `secret-scan.yml`
+
+Runs [gitleaks](https://github.com/gitleaks/gitleaks) over the full Git history.
+
+| Input | Default | Description |
+| --- | --- | --- |
+| `config-path` | `""` | gitleaks config file; empty uses the default ruleset |
+| `fetch-depth` | `0` | Commits to fetch; `0` fetches the full history |
+
+```yaml
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  secret-scan:
+    uses: phlesaux/workflows/.github/workflows/secret-scan.yml@v1
+```
+
 ### `validate-compose.yml`
 
 Copies the env template to `.env` and runs `docker compose config -q`.\
