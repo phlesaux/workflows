@@ -27,6 +27,30 @@ jobs:
 
 To auto-merge majors as well, pass `with: auto_merge_major: true`.
 
+### `lint-workflows.yml`
+
+Lints the repository's own `.github/workflows` with
+[actionlint](https://github.com/rhysd/actionlint) and
+[zizmor](https://github.com/woodruffw/zizmor).
+
+| Input | Default | Description |
+| --- | --- | --- |
+| `zizmor-persona` | `regular` | `regular`, `pedantic`, or `auditor` |
+| `zizmor-min-severity` | `high` | Lowest severity that fails the job |
+| `zizmor-args` | `""` | Extra zizmor arguments, e.g. `--ignore unpinned-uses` |
+
+```yaml
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  lint-workflows:
+    uses: phlesaux/workflows/.github/workflows/lint-workflows.yml@v1
+```
+
 ### `secret-scan.yml`
 
 Runs [gitleaks](https://github.com/gitleaks/gitleaks) over the full Git history.

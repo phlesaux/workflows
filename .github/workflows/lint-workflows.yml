@@ -1,0 +1,44 @@
+name: 🔍 Lint workflows
+
+on:
+  pull_request:
+  workflow_call:
+    inputs:
+      zizmor-persona:
+        description: zizmor persona (regular, pedantic, auditor)
+        type: string
+        default: regular
+      zizmor-min-severity:
+        description: Lowest zizmor severity that fails the job (low, medium, high)
+        type: string
+        default: high
+      zizmor-args:
+        description: Extra arguments passed to zizmor, e.g. "--ignore unpinned-uses"
+        type: string
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: Lint workflows
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: actionlint
+        run: docker run --rm -v "$PWD:/repo:ro" -w /repo rhysd/actionlint:1.7.12@sha256:b1934ee5f1c509618f2508e6eb47ee0d3520686341fec936f3b79331f9315667
+
+      - name: zizmor
+        env:
+          ZIZMOR_PERSONA: ${{ inputs.zizmor-persona||'regular' }}
+          ZIZMOR_MIN_SEVERITY: ${{ inputs.zizmor-min-severity||'high' }}
+          ZIZMOR_ARGS: ${{ inputs.zizmor-args }}
+        run: |
+          read -ra extra <<< "$ZIZMOR_ARGS"
+          pipx run zizmor==1.31.1 --persona="$ZIZMOR_PERSONA" --min-severity="$ZIZMOR_MIN_SEVERITY" "${extra[@]}" .
