@@ -1,0 +1,44 @@
+name: 🤖 Dependabot auto-merge
+
+on:
+  workflow_call:
+    inputs:
+      auto_merge_major:
+        description: Auto-merge major version updates
+        type: boolean
+        default: false
+      auto_merge_minor:
+        description: Auto-merge minor version updates
+        type: boolean
+        default: true
+      auto_merge_patch:
+        description: Auto-merge patch version updates
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  auto-merge:
+    name: Auto-merge
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    if: github.event.pull_request.user.login == 'dependabot[bot]'
+    steps:
+      - name: Fetch Dependabot metadata
+        id: metadata
+        uses: dependabot/fetch-metadata@25dd0e34f4fe68f24cc83900b1fe3fe149efef98 # v3.1.0
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Enable auto-merge
+        if: |
+          (inputs.auto_merge_major && steps.metadata.outputs.update-type == 'version-update:semver-major') ||
+          (inputs.auto_merge_minor && steps.metadata.outputs.update-type == 'version-update:semver-minor') ||
+          (inputs.auto_merge_patch && steps.metadata.outputs.update-type == 'version-update:semver-patch')
+        run: gh pr merge --auto --squash "$PR_URL"
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
