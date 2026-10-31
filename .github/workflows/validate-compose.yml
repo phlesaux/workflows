@@ -1,0 +1,39 @@
+name: 🐳 Validate compose
+
+on:
+  workflow_call:
+    inputs:
+      compose-file:
+        description: Compose file to validate
+        type: string
+        default: compose.yaml
+      env-file:
+        description: Environment template to copy to .env
+        type: string
+        default: .env.dist
+
+jobs:
+  validate:
+    name: Validate compose
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Create .env from template
+        env:
+          ENV_FILE: ${{ inputs.env-file }}
+        run: |
+          if [ -f "$ENV_FILE" ]; then
+            cp "$ENV_FILE" .env
+          else
+            echo "No $ENV_FILE found. Validating without .env"
+          fi
+
+      - name: Validate compose file
+        env:
+          COMPOSE_FILE: ${{ inputs.compose-file }}
+        run: docker compose -f "$COMPOSE_FILE" config -q

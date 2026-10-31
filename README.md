@@ -26,3 +26,28 @@ jobs:
 ```
 
 To auto-merge majors as well, pass `with: auto_merge_major: true`.
+
+### `validate-compose.yml`
+
+Copies the env template to `.env` and runs `docker compose config -q`.\
+If the template is missing, validation runs without `.env`.\
+Required variables will still fail the check.
+
+| Input | Default | Description |
+| --- | --- | --- |
+| `compose-file` | `compose.yaml` | Compose file to validate |
+| `env-file` | `.env.dist` | Environment template copied to `.env` |
+
+```yaml
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    uses: phlesaux/workflows/.github/workflows/validate-compose.yml@v1
+```
+
+Override the defaults with `with:` when a project uses different filenames.
